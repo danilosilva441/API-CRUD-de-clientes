@@ -3,10 +3,13 @@ package com.devsuperior.DesafioParaEntregar.entities;
 import java.io.Serializable;
 import java.time.Instant;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 @Entity
@@ -23,6 +26,12 @@ public class Client implements Serializable {
 	private Double income;
 	private Instant birthDate;
 	private Integer children;
+	
+	@Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE") //Serve para especificar o momento da ação no banco, sem diferenciar local 
+	private Instant createdAt;
+	
+	@Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE") //Serve para especificar o momento da ação no banco, sem diferenciar local 
+	private Instant updatedAt;
 	
 	public Client(){
 	}
@@ -83,4 +92,46 @@ public class Client implements Serializable {
 	public void setChildren(Integer children) {
 		this.children = children;
 	}
+	
+	public Instant getCreatedAt() {
+		return createdAt;
+	}
+
+	public Instant getUpdateAt() {
+		return updatedAt;
+	}
+	
+	@PrePersist  
+	public void prePersist() {  //Serve para salvar o momento em que o cadastro foi criado
+		createdAt = Instant.now();
+	}
+	@PreUpdate
+	public void preUpdate() { //Serve para salvar o momento em que o cadastro foi atualizado
+		updatedAt = Instant.now();
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals (Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Client other = (Client) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}	
 }
