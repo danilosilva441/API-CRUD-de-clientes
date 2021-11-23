@@ -1,14 +1,14 @@
 package com.devsuperior.DesafioParaEntregar.services;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +25,9 @@ public class ClientService {
 	private ClientRepository repository;
 
 	@Transactional(readOnly = true)
-	public List<ClientDTO> findAll() {
-		List<Client> list = repository.findAll();
-		return list.stream().map(x -> new ClientDTO(x)).collect(Collectors.toList());
+	public Page<ClientDTO> findAllPaged(PageRequest pageRequest) {
+		Page<Client> list = repository.findAll(pageRequest);
+		return list.map(x -> new ClientDTO(x));
 	}
 
 	@Transactional(readOnly = true)
@@ -52,7 +52,7 @@ public class ClientService {
 	@Transactional
 	public ClientDTO update(Long id, ClientDTO dto) {
 		try {
-			Client entity = repository.getById(id);
+			Client entity = repository.getOne(id);
 			entity.setName(dto.getName());
 			entity.setCpf(dto.getCpf());
 			entity.setIncome(dto.getIncome());
@@ -66,15 +66,13 @@ public class ClientService {
 	}
 
 	public void delete(Long id) {
-		try { 					//Serve para tratar excessão de error, caso não encontre o ID esperado.
+		try { // Serve para tratar excessão de error, caso não encontre o ID esperado.
 			repository.deleteById(id);
-		}
-		catch (EmptyResultDataAccessException e) {
+		} catch (EmptyResultDataAccessException e) {
 			throw new ResourceNotFoundException("Id not found " + id);
-		}
-		catch (DataIntegrityViolationException e) { // Serve para avisar de erro caso apague uma coisa de que deveria
+		} catch (DataIntegrityViolationException e) { // Serve para avisar de erro caso apague uma coisa de que deveria
 			throw new DatabaseException("Integraty violation");
 		}
-		
+
 	}
 }
